@@ -127,12 +127,13 @@ def send_status(msg):
     time_next_change = storage.time_next_change
     time_starts = _to_printable_datetime(time_next_change[0]) if time_next_change is not None else loc.NA
     time_ends = _to_printable_datetime(time_next_change[1]) if time_next_change is not None else loc.NA
+    answer = loc.STATUS_MESSAGE.format(time_starts, time_ends, len(storage.subscribed_chats))
+
     if msg.chat.id in storage.admin_chats:
         time_admin_notify = _to_printable_datetime(storage.next_admin_notification_time)
-        bot.send_message(msg.chat.id, loc.ADMIN_STATUS_MESSAGE.format(time_starts, time_ends, time_admin_notify),
-                     parse_mode="Markdown")
-    else:
-        bot.send_message(msg.chat.id, loc.STATUS_MESSAGE.format(time_starts, time_ends), parse_mode="Markdown")
+        answer += "\n" + loc.STATUS_MESSAGE_ADMIN_ADDITION.format(time_admin_notify)
+
+    bot.reply_to(msg, answer, parse_mode="Markdown")
 
 
 @bot.message_handler(commands=['linen_changed'])
