@@ -1,12 +1,21 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
 from datetime import timedelta
+from datetime import time
 
 _JOB_ADMIN_NOTIFIER = 'admin_notifier'  # A job that reminds admin to set new datetime for linen change
 _JOB_USER_NOTIFIER = 'user_notifier'  # The main job which sends notifications to users
 _FIRST_ADMIN_NOTIFICATION_DELAY = timedelta(days=14)
 _PERIODICAL_ADMIN_NOTIFICATION_DELAY = timedelta(days=7)
-_PERIODICAL_USER_NOTIFICATION_DELAY = timedelta(hours=1)
+_PERIODICAL_USER_NOTIFICATION_DELAY = timedelta(hours=2)
+_PERIODS_OF_SILENCE = (
+    (time(9, 0), time(10, 25)),
+    (time(10, 45), time(12, 10)),
+    (time(12, 20), time(13, 45)),
+    (time(13, 55), time(15, 20)),
+    (time(15, 30), time(16, 55)),
+    (time(17, 5), time(18, 30))
+)
 _scheduler = None
 _storage = None
 _callback = None
