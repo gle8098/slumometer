@@ -36,8 +36,19 @@ STATUS_MESSAGE = "Следующая смена белья будет с `{}` п
                  "На рассылку зарегистрировано {} чатов."
 STATUS_MESSAGE_ADMIN_ADDITION = "Админы получат следующее напоминание выставить новую дату смены в `{}`."
 
-NOTIFY_LINEN_CHANGE = "Сдайте белье сегодня до {}! Если вы его поменяли, напишите /linen_changed."
-NOTIFY_LAST_LINEN_CHANGE = "Сдайте белье! Это последнее напоминение: кастелянная закрывается."
+#NOTIFY_LINEN_CHANGE = "Сдайте белье сегодня до {}! Если вы его поменяли, напишите /linen_changed."
+#NOTIFY_LAST_LINEN_CHANGE = "Сдайте белье! Это последнее напоминение: кастелянная закрывается."
+NOTIFY_LINEN_CHANGE_USUAL = "Сдайте белье сегодня до {}! Если вы его поменяли, напишите /linen_changed. Следующее " \
+                            "напоминание вы получите в {}."
+_NOTIFY_LINEN_CHANGE_IN_TIME = "Кастелянная закрывается через {}! Успейте сдать белье. Если вы его сдали, напишите " \
+                              "/linen_changed."
+NOTIFY_LINEN_CHANGE_IN_1HOUR = _NOTIFY_LINEN_CHANGE_IN_TIME.format('час')
+NOTIFY_LINEN_CHANGE_IN_30MIN = _NOTIFY_LINEN_CHANGE_IN_TIME.format('30 минут')
+NOTIFY_LINEN_CHANGE_IN_15MIN = _NOTIFY_LINEN_CHANGE_IN_TIME.format('15 минут')
+NOTIFY_LINEN_CHANGE_LAST = "Увы, кастелянная закрылась. Следующая сдача будет примерно через 2 недели. Приятных снов на " \
+                           "грязной постели :)"
+
+
 ADMIN_NOTIFY_SET_NEXT_TIME = "Дата и время следующей сдачи белья еще не указаны. Пожалуйста, укажите их с помощью " \
                              "команды /stc. Следующее напоминание вы получите {}."
 LINEN_CHANGED_MESSAGE = "Понял, принял."

@@ -1,11 +1,11 @@
 import telebot
 import sys
+import os
 import logging
 from slumometer import storage, scheduler, localization as loc
 from datetime import datetime
-from pytz import timezone
+from common import MOSCOW_TIMEZONE
 
-MOSCOW_TIMEZONE = timezone('Europe/Moscow')
 LOG = logging.getLogger("slumometer.bot")
 LOG.addHandler(logging.StreamHandler())
 LOG.setLevel(logging.INFO)
@@ -36,7 +36,7 @@ def _to_printable_datetime(timestamp, **kwargs):
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(msg):
-    bot.send_message(msg.chat.id, loc.HELLO_MESSAGE)
+    bot.send_message(msg.chat.id, loc.HELLO_MESSAGE, parse_mode="Markdown")
 
 
 @bot.message_handler(commands=['subscribe'])
@@ -118,8 +118,9 @@ def set_time_change(msg):
         bot.send_message(msg.chat.id, loc.BAD_DATETIME_MESSAGE)
         return
 
-    scheduler.update_time_of_next_change([time_start, time_end])
-    bot.send_message(msg.chat.id, loc.TIME_NEXT_CHANGE_UPDATED.format(_to_printable_datetime(time_start)))
+    first_alarm_timestamp = scheduler.update_time_of_next_change([time_start, time_end]).timestamp()
+    bot.send_message(msg.chat.id, loc.TIME_NEXT_CHANGE_UPDATED.format(_to_printable_datetime(first_alarm_timestamp)),
+                     parse_mode="Markdown")
 
 
 @bot.message_handler(commands=['status'])
@@ -180,21 +181,47 @@ class EventHandler(scheduler.Callback):
             bot.send_message(chat_id, loc.ADMIN_NOTIFY_SET_NEXT_TIME.format(
                 _to_printable_datetime(storage.next_admin_notification_time, no_time=True)), parse_mode="Markdown")
 
-    def on_user_notification(self, is_first_call, is_last_call):
-        if is_first_call:
+    def on_user_notification(self, alarm_type, next_alarm_datetime, is_first_alarm):
+        if is_first_alarm:
             # Reset storage.chats_to_notify
             storage.chats_to_notify = storage.subscribed_chats.copy()
             storage.save()
-        text = loc.NOTIFY_LINEN_CHANGE.format(_to_printable_datetime(storage.time_next_change[1], no_date=True))\
-            if not is_last_call else loc.NOTIFY_LAST_LINEN_CHANGE
+
+        #text = loc.NOTIFY_LINEN_CHANGE.format(_to_printable_datetime(storage.time_next_change[1], no_date=True))\
+        #    if not is_last_call else loc.NOTIFY_LAST_LINEN_CHANGE
+        #for chat_id in storage.chats_to_notify:
+        #    bot.send_message(chat_id, text)
+
+        text = None
+        use_markdown = False
+        if alarm_type == scheduler.USER_NOTIFY_TYPE_USUAL:
+            text = loc.NOTIFY_LINEN_CHANGE_USUAL.format(
+                _to_printable_datetime(storage.time_next_change[1], no_date=True),
+                _to_printable_datetime(next_alarm_datetime.timestamp(), no_date=True)
+            )
+            # use_markdown = True
+        elif alarm_type == scheduler.USER_NOTIFY_TYPE_1HOUR_TO_END:
+            text = loc.NOTIFY_LINEN_CHANGE_IN_1HOUR
+        elif alarm_type == scheduler.USER_NOTIFY_TYPE_30MIN_TO_END:
+            text = loc.NOTIFY_LINEN_CHANGE_IN_30MIN
+        elif alarm_type == scheduler.USER_NOTIFY_TYPE_15MIN_TO_END:
+            text = loc.NOTIFY_LINEN_CHANGE_IN_15MIN
+        elif alarm_type == scheduler.USER_NOTIFY_TYPE_LAST:
+            text = loc.NOTIFY_LINEN_CHANGE_LAST
+
         for chat_id in storage.chats_to_notify:
-            bot.send_message(chat_id, text)
+            bot.send_message(chat_id, text, parse_mode="Markdown" if use_markdown else None)
 
 
 if __name__ == '__main__':
     storage.load()
     scheduler.set_callback(EventHandler())
-    scheduler.init(storage)
+
+    if os.environ['SLUMOMETER_TEST']:
+        scheduler.init_for_test(storage)
+        scheduler._scheduler.print_jobs()
+    else:
+        scheduler.init(storage)
 
     LOG.info('Starting bot')
     telebot.logger.setLevel(logging.INFO)
