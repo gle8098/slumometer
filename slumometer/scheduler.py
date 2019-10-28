@@ -33,7 +33,8 @@ USER_NOTIFY_TYPE_30MIN_TO_END = 3
 USER_NOTIFY_TYPE_15MIN_TO_END = 4
 USER_NOTIFY_TYPE_LAST = 5
 
-_USER_ENDING_ZONE        = timedelta(hours=1, minutes=40)
+_USER_ENDING_ZONE        = timedelta(hours=1, minutes=40)  # Это число должно быть больше, чем максимальная разница
+                                                           # между соседними временами в _USER_NOTIFICATION_TIMES_TO_SEND
 _USER_1HOUR_TO_END_DELAY = timedelta(hours=1)
 _USER_30MIN_TO_END_DELAY = timedelta(minutes=30)
 _USER_15MIN_TO_END_DELAY = timedelta(minutes=15)
